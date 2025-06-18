@@ -186,7 +186,6 @@ class Tool implements ToolInterface
             // Normalize missing optional properties by assigning them a null value
             // Treat it as explicitly null to ensure consistent structure
             if (!array_key_exists($propertyName, $inputs)) {
-                $carry[$propertyName] = null;
                 return $carry;
             }
 
