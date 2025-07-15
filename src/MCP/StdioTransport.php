@@ -77,7 +77,7 @@ class StdioTransport implements McpTransportInterface
             throw new McpException("MCP server process is not running");
         }
 
-        $jsonData = \json_encode($data);
+        $jsonData = \json_encode($data, JSON_UNESCAPED_UNICODE);
         if ($jsonData === false) {
             throw new McpException("Failed to encode request data to JSON");
         }

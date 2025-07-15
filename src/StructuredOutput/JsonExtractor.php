@@ -47,7 +47,7 @@ class JsonExtractor
 
                 if ($data !== null) {
                     // Re-encode in canonical JSON form
-                    $result = \json_encode($data);
+                    $result = \json_encode($data, JSON_UNESCAPED_UNICODE);
                     if ($result !== false) {
                         return $result;
                     }

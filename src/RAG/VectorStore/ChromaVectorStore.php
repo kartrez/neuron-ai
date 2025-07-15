@@ -5,6 +5,7 @@ namespace NeuronAI\RAG\VectorStore;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use NeuronAI\RAG\Document;
+use Ramsey\Uuid\Uuid;
 
 class ChromaVectorStore implements VectorStoreInterface
 {
@@ -58,7 +59,7 @@ class ChromaVectorStore implements VectorStoreInterface
         $result = [];
         for ($i = 0; $i < $size; $i++) {
             $document = new Document();
-            $document->id = $response['ids'][$i] ?? \uniqid();
+            $document->id = $response['ids'][$i] ?? Uuid::uuid4()->toString();
             $document->embedding = $response['embeddings'][$i];
             $document->content = $response['documents'][$i];
             $document->sourceType = $response['metadatas'][$i]['sourceType'] ?? null;

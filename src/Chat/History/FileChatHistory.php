@@ -58,6 +58,6 @@ class FileChatHistory extends AbstractChatHistory
 
     protected function updateFile(): void
     {
-        \file_put_contents($this->getFilePath(), \json_encode($this->jsonSerialize()), LOCK_EX);
+        \file_put_contents($this->getFilePath(), \json_encode($this->jsonSerialize(), JSON_UNESCAPED_UNICODE), LOCK_EX);
     }
 }

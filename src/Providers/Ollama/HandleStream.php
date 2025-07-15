@@ -41,7 +41,7 @@ trait HandleStream
                 yield \json_encode(['usage' => [
                     'input_tokens' => $line['prompt_eval_count'],
                     'output_tokens' => $line['eval_count'],
-                ]]);
+                ]], JSON_UNESCAPED_UNICODE);
                 continue;
             }
 

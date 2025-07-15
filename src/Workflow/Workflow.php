@@ -9,6 +9,7 @@ use NeuronAI\Workflow\Exporter\MermaidExporter;
 use NeuronAI\Workflow\Persistence\InMemoryPersistence;
 use NeuronAI\Workflow\Persistence\PersistenceInterface;
 use SplSubject;
+use Ramsey\Uuid\Uuid;
 
 class Workflow implements SplSubject
 {
@@ -38,7 +39,7 @@ class Workflow implements SplSubject
     {
         $this->exporter = new MermaidExporter();
         $this->persistence = $persistence ?? new InMemoryPersistence();
-        $this->workflowId = $workflowId ?? \uniqid('neuron_workflow_');
+        $this->workflowId = $workflowId ?? Uuid::uuid4()->toString();;
     }
 
     public function validate(): void

@@ -52,7 +52,7 @@ trait HandleStream
                 yield \json_encode(['usage' => [
                     'input_tokens' => $line['usage']['prompt_tokens'],
                     'output_tokens' => $line['usage']['completion_tokens'],
-                ]]);
+                ]], JSON_UNESCAPED_UNICODE);
                 continue;
             }
 

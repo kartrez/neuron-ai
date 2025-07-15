@@ -44,12 +44,12 @@ trait HandleStream
 
             // https://docs.anthropic.com/en/api/messages-streaming
             if ($line['type'] === 'message_start') {
-                yield \json_encode(['usage' => $line['message']['usage']]);
+                yield \json_encode(['usage' => $line['message']['usage']], JSON_UNESCAPED_UNICODE);
                 continue;
             }
 
             if ($line['type'] === 'message_delta') {
-                yield \json_encode(['usage' => $line['usage']]);
+                yield \json_encode(['usage' => $line['usage']], JSON_UNESCAPED_UNICODE);
                 continue;
             }
 

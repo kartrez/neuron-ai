@@ -5,6 +5,7 @@ namespace NeuronAI\RAG\VectorStore;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use NeuronAI\RAG\Document;
+use Ramsey\Uuid\Uuid;
 
 class MeilisearchVectorStore implements VectorStoreInterface
 {
@@ -82,7 +83,7 @@ class MeilisearchVectorStore implements VectorStoreInterface
 
         return \array_map(function (array $item) {
             $document = new Document($item['content']);
-            $document->id = $item['id'] ?? \uniqid();
+            $document->id = $item['id'] ?? Uuid::uuid4()->toString();;
             $document->sourceType = $item['sourceType'] ?? null;
             $document->sourceName = $item['sourceName'] ?? null;
             $document->embedding = $item['_vectors']['default']['embeddings'];

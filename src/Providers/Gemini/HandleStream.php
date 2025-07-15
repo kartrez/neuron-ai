@@ -51,7 +51,7 @@ trait HandleStream
                 yield \json_encode(['usage' => [
                     'input_tokens' => $line['usageMetadata']['promptTokenCount'],
                     'output_tokens' => $line['usageMetadata']['candidatesTokenCount'],
-                ]]);
+                ]], JSON_UNESCAPED_UNICODE);
                 continue;
             }
 

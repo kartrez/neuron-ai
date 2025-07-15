@@ -153,7 +153,7 @@ class Tool implements ToolInterface
 
     public function setResult(string|array $result): self
     {
-        $this->result = is_array($result) ? \json_encode($result) : $result;
+        $this->result = is_array($result) ? \json_encode($result, JSON_UNESCAPED_UNICODE) : $result;
         return $this;
     }
 

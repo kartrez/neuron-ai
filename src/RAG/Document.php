@@ -2,6 +2,8 @@
 
 namespace NeuronAI\RAG;
 
+use Ramsey\Uuid\Uuid;
+
 class Document implements \JsonSerializable
 {
     public string|int $id;
@@ -19,10 +21,10 @@ class Document implements \JsonSerializable
     public function __construct(
         public string $content = '',
     ) {
-        $this->id = \uniqid();
+        $this->id = Uuid::uuid4()->toString();
     }
 
-    public function getId(): string|int
+    public function getId(): string
     {
         return $this->id;
     }
