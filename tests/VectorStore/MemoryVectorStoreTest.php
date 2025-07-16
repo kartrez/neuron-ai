@@ -26,11 +26,11 @@ class MemoryVectorStoreTest extends TestCase
     public function test_add_document_and_search()
     {
         $this->expectNotToPerformAssertions();
-        $document = new Document('Hello World!');
-        $document->embedding = $this->embedding;
+        $document = new Document(content: 'Hello World!');
+        $document->setEmbedding($this->embedding);
 
         $store = new MemoryVectorStore();
-        $store->addDocument($document);
+        $store->addDocuments([$document]);
 
         $results = $store->similaritySearch($this->embedding);
     }
@@ -39,12 +39,12 @@ class MemoryVectorStoreTest extends TestCase
     {
         $vectorStore = new MemoryVectorStore();
 
-        $doc1 = new Document("Document 1");
-        $doc1->embedding = [1, 0];
-        $doc2 = new Document("Document 2");
-        $doc2->embedding = [0, 1];
-        $doc3 = new Document("Document 3");
-        $doc3->embedding = [0.5, 0.5];
+        $doc1 = new Document(content: "Document 1");
+        $doc1->setEmbedding([1, 0]);
+        $doc2 = new Document(content: "Document 2");
+        $doc2->setEmbedding([0, 1]);
+        $doc3 = new Document(content: "Document 3");
+        $doc3->setEmbedding([0.5, 0.5]);
 
         $vectorStore->addDocuments([$doc1, $doc2, $doc3]);
 
@@ -57,9 +57,9 @@ class MemoryVectorStoreTest extends TestCase
 
     public function test_custom_document_model()
     {
-        $document = new Document('Hello World!');
+        $document = new Document(content: 'Hello World!');
         $document->addMetadata('customProperty', 'customValue');
-        $document->embedding = [1, 0];
+        $document->setEmbedding([1, 0]);
 
         $vectorStore = new MemoryVectorStore();
         $vectorStore->addDocuments([$document]);
@@ -67,6 +67,6 @@ class MemoryVectorStoreTest extends TestCase
         $results = $vectorStore->similaritySearch([1, 0]);
 
         $this->assertCount(1, $results);
-        $this->assertEquals($document->metadata['customProperty'], $results[0]->metadata['customProperty']);
+        $this->assertEquals($document->getMetadata()['customProperty'], $results[0]->getMetadata()['customProperty']);
     }
 }

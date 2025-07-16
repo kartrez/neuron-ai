@@ -3,6 +3,7 @@
 namespace NeuronAI\RAG\Splitter;
 
 use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 class DelimiterTextSplitter implements SplitterInterface
 {
@@ -18,9 +19,9 @@ class DelimiterTextSplitter implements SplitterInterface
     }
 
     /**
-     * @return Document[]
+     * @return DocumentInterface[]
      */
-    public function splitDocument(Document $document): array
+    public function splitDocument(DocumentInterface $document): array
     {
         $text = $document->getContent();
 
@@ -38,18 +39,19 @@ class DelimiterTextSplitter implements SplitterInterface
 
         $split = [];
         foreach ($chunks as $chunk) {
-            $newDocument = new Document($chunk);
-            $newDocument->sourceType = $document->getSourceType();
-            $newDocument->sourceName = $document->getSourceName();
-            $split[] = $newDocument;
+            $split[] = new Document(
+                content: $chunk,
+                sourceType: $document->getSourceType(),
+                sourceName: $document->getSourceName()
+            );;
         }
 
         return $split;
     }
 
     /**
-     * @param  Document[]  $documents
-     * @return Document[]
+     * @param  DocumentInterface[]  $documents
+     * @return DocumentInterface[]
      */
     public function splitDocuments(array $documents): array
     {

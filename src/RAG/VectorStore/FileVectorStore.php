@@ -4,6 +4,7 @@ namespace NeuronAI\RAG\VectorStore;
 
 use NeuronAI\Exceptions\VectorStoreException;
 use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 use NeuronAI\RAG\VectorStore\Search\SimilaritySearch;
 
 class FileVectorStore implements VectorStoreInterface
@@ -24,15 +25,13 @@ class FileVectorStore implements VectorStoreInterface
         return $this->directory . DIRECTORY_SEPARATOR . $this->name.$this->ext;
     }
 
-    public function addDocument(Document $document): void
-    {
-        $this->addDocuments([$document]);
-    }
-
+    /**
+     * @param DocumentInterface[] $documents
+     */
     public function addDocuments(array $documents): void
     {
         $this->appendToFile(
-            \array_map(fn (Document $document) => $document->jsonSerialize(), $documents)
+            \array_map(fn (DocumentInterface $document) => $document->jsonSerialize(), $documents)
         );
     }
 
@@ -58,14 +57,20 @@ class FileVectorStore implements VectorStoreInterface
         }
 
         return \array_map(function ($item) {
-            $itemDoc = $item['document'];
-            $document = new Document($itemDoc['content']);
-            $document->embedding = $itemDoc['embedding'];
-            $document->sourceType = $itemDoc['sourceType'];
-            $document->sourceName = $itemDoc['sourceName'];
-            $document->id = $itemDoc['id'];
-            $document->score = 1 - $item['dist'];
-            $document->metadata = $itemDoc['metadata'] ?? [];
+            $document = (new Document(
+                id: $item['document']['id'],
+                content: $item['document']['content'],
+                sourceType: $item['document']['sourceType'],
+                sourceName: $item['document']['sourceName'],
+            ))
+                ->setEmbedding($item['document']['embedding'])
+                ->setScore(1 - $item['dist']);
+
+            foreach ($item['document']['metadata'] ?? [] as $name => $value) {
+                if (!\in_array($name, ['content', 'sourceType', 'sourceName', 'score', 'embedding', 'id'])) {
+                    $document->addMetadata($name, $value);
+                }
+            }
 
             return $document;
         }, $topItems);

@@ -2,7 +2,7 @@
 
 namespace NeuronAI\RAG\Embeddings;
 
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 interface EmbeddingsProviderInterface
 {
@@ -11,7 +11,7 @@ interface EmbeddingsProviderInterface
      */
     public function embedText(string $text): array;
 
-    public function embedDocument(Document $document): Document;
+    public function embedDocument(DocumentInterface $document): DocumentInterface;
 
     public function embedDocuments(array $documents): array;
 }

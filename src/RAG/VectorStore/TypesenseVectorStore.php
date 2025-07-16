@@ -4,6 +4,7 @@ namespace NeuronAI\RAG\VectorStore;
 
 use Http\Client\Exception;
 use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 use Typesense\Client;
 use Typesense\Exceptions\ObjectNotFound;
 use Typesense\Exceptions\TypesenseClientError;
@@ -22,7 +23,7 @@ class TypesenseVectorStore implements VectorStoreInterface
      * @throws Exception
      * @throws TypesenseClientError
      */
-    public function checkIndexStatus(Document $document): void
+    public function checkIndexStatus(DocumentInterface $document): void
     {
         try {
             $this->client->collections[$this->collection]->retrieve();
@@ -52,7 +53,7 @@ class TypesenseVectorStore implements VectorStoreInterface
             ];
 
             // Map custom fields
-            foreach ($document->metadata as $name => $value) {
+            foreach ($document->getMetadata() as $name => $value) {
                 $fields[] = [
                     'name' => $name,
                     'type' => \gettype($value),
@@ -67,26 +68,8 @@ class TypesenseVectorStore implements VectorStoreInterface
         }
     }
 
-    public function addDocument(Document $document): void
-    {
-        if (empty($document->getEmbedding())) {
-            throw new \Exception('document embedding must be set before adding a document');
-        }
-
-        $this->checkIndexStatus($document);
-
-        $this->client->collections[$this->collection]->documents->create([
-            'id' => $document->getId(), // Unique ID is required
-            'content' => $document->getContent(),
-            'embedding' => $document->getEmbedding(),
-            'sourceType' => $document->getSourceType(),
-            'sourceName' => $document->getSourceName(),
-            ...$document->metadata,
-        ]);
-    }
-
     /**
-     * @param Document[] $documents
+     * @param DocumentInterface[] $documents
      * @throws Exception
      * @throws \JsonException
      * @throws TypesenseClientError
@@ -97,21 +80,22 @@ class TypesenseVectorStore implements VectorStoreInterface
             return;
         }
 
-        if (empty($documents[0]->getEmbedding())) {
-            throw new \Exception('document embedding must be set before adding a document');
-        }
-
         $this->checkIndexStatus($documents[0]);
 
         $lines = [];
         foreach ($documents as $document) {
+            if ($document->getEmbedding()) {
+                throw new \Exception("document embedding must be set before adding a document by id: {$document->getId()}");
+            }
+
+
             $lines[] = json_encode([
                 'id' => $document->getId(), // Unique ID is required
                 'embedding' => $document->getEmbedding(),
                 'content' => $document->getContent(),
                 'sourceType' => $document->getSourceType(),
                 'sourceName' => $document->getSourceName(),
-                ...$document->metadata,
+                ...$document->getMetadata(),
             ]);
         }
 
@@ -136,11 +120,12 @@ class TypesenseVectorStore implements VectorStoreInterface
         $response = $this->client->multiSearch->perform($searchRequests);
         return \array_map(function (array $hit) {
             $item = $hit['document'];
-            $document = new Document($item['content']);
-            //$document->embedding = $item['embedding']; // avoid carrying large data
-            $document->sourceType = $item['sourceType'];
-            $document->sourceName = $item['sourceName'];
-            $document->score = 1 - $hit['vector_distance'];
+            $document = (new Document(
+                content: $item['content'],
+                sourceType: $item['sourceType'],
+                sourceName: $item['sourceName'],
+            ))
+                ->setScore(1 - $hit['vector_distance']);
 
             foreach ($item as $name => $value) {
                 if (!\in_array($name, ['content', 'sourceType', 'sourceName', 'score', 'embedding', 'id', 'vector_distance'])) {

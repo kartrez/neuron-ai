@@ -3,12 +3,12 @@
 namespace NeuronAI\Observability\Events;
 
 use NeuronAI\Chat\Messages\Message;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 class VectorStoreResult
 {
     /**
-     * @param Document[] $documents
+     * @param DocumentInterface[] $documents
      */
     public function __construct(
         public Message $question,

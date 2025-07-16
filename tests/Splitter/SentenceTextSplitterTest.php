@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\RAG\Splitter;
+namespace NeuronAI\Tests\Splitter;
 
 use NeuronAI\RAG\Document;
 use NeuronAI\RAG\Splitter\SentenceTextSplitter;
@@ -16,10 +16,7 @@ class SentenceTextSplitterTest extends TestCase
                 "This is the second sentence that should appear in two chunks. " .
                 "This is the third sentence that completes the text.";
 
-        $document = new Document($text);
-        $document->sourceType = 'test';
-        $document->sourceName = 'test.txt';
-
+        $document = new Document(content: $text, sourceType: 'test', sourceName: 'test.txt');
         $result = $splitter->splitDocument($document);
 
         $this->assertGreaterThan(1, count($result));
@@ -39,10 +36,11 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 10, overlapWords: 2);
 
         $text = "Test document.";
-        $document = new Document($text);
-        $document->sourceType = 'test';
-        $document->sourceName = 'test.txt';
-
+        $document = new Document(
+            content: $text,
+            sourceType: 'test',
+            sourceName: 'test.txt'
+        );
         $result = $splitter->splitDocument($document);
 
         $this->assertCount(1, $result);
@@ -61,10 +59,7 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 10, overlapWords: 0);
 
         $text = "This is the first sentence. This is the second sentence. This is the third sentence.";
-        $document = new Document($text);
-        $document->sourceType = 'test';
-        $document->sourceName = 'test.txt';
-
+        $document = new Document(content: $text, sourceType: 'test', sourceName: 'test.txt');
         $result = $splitter->splitDocument($document);
 
         // Verify there are exactly 2 chunks
@@ -106,7 +101,7 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 10, overlapWords: 0);
 
         $text = "First sentence. Second sentence. Third sentence.";
-        $document = new Document($text);
+        $document = new Document(content: $text);
 
         $result = $splitter->splitDocument($document);
 
@@ -119,7 +114,7 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 10, overlapWords: 2);
 
         $text = "One two three four five six seven eight nine ten. Eleven twelve thirteen fourteen fifteen.";
-        $document = new Document($text);
+        $document = new Document(content: $text);
 
         $result = $splitter->splitDocument($document);
 
@@ -139,7 +134,7 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 5, overlapWords: 0);
 
         $text = "one two three four five six seven eight nine ten";
-        $document = new Document($text);
+        $document = new Document(content: $text);
 
         $result = $splitter->splitDocument($document);
 
@@ -156,7 +151,7 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 10, overlapWords: 0);
 
         $text = "First paragraph.\n\nSecond paragraph which is very long and contains many words and exceeds the chunk limit. Third paragraph.";
-        $document = new Document($text);
+        $document = new Document(content: $text);
 
         $result = $splitter->splitDocument($document);
 
@@ -186,7 +181,7 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 6, overlapWords: 0);
 
         $text = "Short. This is a very long sentence that exceeds the chunk limit. End.";
-        $document = new Document($text);
+        $document = new Document(content: $text);
 
         $result = $splitter->splitDocument($document);
 
@@ -206,7 +201,7 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 10, overlapWords: 0);
 
         $text = "   ";
-        $document = new Document($text);
+        $document = new Document(content: $text);
 
         $result = $splitter->splitDocument($document);
 
@@ -218,7 +213,7 @@ class SentenceTextSplitterTest extends TestCase
         $splitter = new SentenceTextSplitter(maxWords: 10, overlapWords: 0);
 
         $text = "Only one sentence.";
-        $document = new Document($text);
+        $document = new Document(content: $text);
 
         $result = $splitter->splitDocument($document);
 

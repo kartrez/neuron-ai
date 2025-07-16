@@ -5,6 +5,7 @@ namespace NeuronAI\RAG\VectorStore;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 use Ramsey\Uuid\Uuid;
 
 class ChromaVectorStore implements VectorStoreInterface
@@ -31,11 +32,10 @@ class ChromaVectorStore implements VectorStoreInterface
         ]);
     }
 
-    public function addDocument(Document $document): void
-    {
-        $this->addDocuments([$document]);
-    }
-
+    /**
+     * @param DocumentInterface[] $documents
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function addDocuments(array $documents): void
     {
         $this->getClient()->post('upsert', [
@@ -43,6 +43,11 @@ class ChromaVectorStore implements VectorStoreInterface
         ])->getBody()->getContents();
     }
 
+    /**
+     * @param list<float> $embedding
+     * @return Document[]
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function similaritySearch(array $embedding): iterable
     {
         $response = $this->getClient()->post('query', [
@@ -58,13 +63,14 @@ class ChromaVectorStore implements VectorStoreInterface
         $size = \count($response['distances']);
         $result = [];
         for ($i = 0; $i < $size; $i++) {
-            $document = new Document();
-            $document->id = $response['ids'][$i] ?? Uuid::uuid4()->toString();
-            $document->embedding = $response['embeddings'][$i];
-            $document->content = $response['documents'][$i];
-            $document->sourceType = $response['metadatas'][$i]['sourceType'] ?? null;
-            $document->sourceName = $response['metadatas'][$i]['sourceName'] ?? null;
-            $document->score = $response['distances'][$i];
+            $document = (new Document(
+                id: $response['ids'][$i] ?? Uuid::uuid4()->toString(),
+                content: $response['documents'][$i],
+                sourceType: $response['metadatas'][$i]['sourceType'] ?? '',
+                sourceName: $response['metadatas'][$i]['sourceName'] ?? '',
+            ))
+                ->setEmbedding($response['embeddings'][$i])
+                ->setScore($response['distances'][$i]);
 
             foreach ($response['metadatas'][$i] as $name => $value) {
                 if (!\in_array($name, ['content', 'sourceType', 'sourceName', 'score', 'embedding', 'id'])) {
@@ -79,8 +85,7 @@ class ChromaVectorStore implements VectorStoreInterface
     }
 
     /**
-     * @param Document[] $documents
-     * @return array
+     * @param DocumentInterface[] $documents
      */
     protected function mapDocuments(array $documents): array
     {
@@ -98,7 +103,7 @@ class ChromaVectorStore implements VectorStoreInterface
             $payload['metadatas'][] = [
                 'sourceType' => $document->getSourceType(),
                 'sourceName' => $document->getSourceName(),
-                ...$document->metadata,
+                ...$document->getMetadata(),
             ];
         }
 

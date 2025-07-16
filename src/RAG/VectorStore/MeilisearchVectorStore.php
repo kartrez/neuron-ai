@@ -5,6 +5,7 @@ namespace NeuronAI\RAG\VectorStore;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 use Ramsey\Uuid\Uuid;
 
 class MeilisearchVectorStore implements VectorStoreInterface
@@ -38,21 +39,20 @@ class MeilisearchVectorStore implements VectorStoreInterface
         }
     }
 
-    public function addDocument(Document $document): void
-    {
-        $this->addDocuments([$document]);
-    }
-
+    /**
+     * @param DocumentInterface[] $documents
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function addDocuments(array $documents): void
     {
         $this->client->put('documents', [
-            RequestOptions::JSON => \array_map(function (Document $document) {
+            RequestOptions::JSON => \array_map(function (DocumentInterface $document) {
                 return [
                     'id' => $document->getId(),
                     'content' => $document->getContent(),
                     'sourceType' => $document->getSourceType(),
                     'sourceName' => $document->getSourceName(),
-                    ...$document->metadata,
+                    ...$document->getMetadata(),
                     '_vectors' => [
                         'default' => [
                             'embeddings' => $document->getEmbedding(),
@@ -64,6 +64,10 @@ class MeilisearchVectorStore implements VectorStoreInterface
         ]);
     }
 
+    /**
+     * @return Document[]
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function similaritySearch(array $embedding): iterable
     {
         $response = $this->client->post('search', [
@@ -82,12 +86,14 @@ class MeilisearchVectorStore implements VectorStoreInterface
         $response = \json_decode($response, true);
 
         return \array_map(function (array $item) {
-            $document = new Document($item['content']);
-            $document->id = $item['id'] ?? Uuid::uuid4()->toString();;
-            $document->sourceType = $item['sourceType'] ?? null;
-            $document->sourceName = $item['sourceName'] ?? null;
-            $document->embedding = $item['_vectors']['default']['embeddings'];
-            $document->score = $item['_rankingScore'];
+            $document = (new Document(
+                id: $item['id'] ?? Uuid::uuid4()->toString(),
+                content: $item['content'],
+                sourceType: $item['sourceType'] ?? '',
+                sourceName: $item['sourceName'] ?? '',
+            ))
+                ->setEmbedding($item['_vectors']['default']['embeddings'])
+                ->setScore($item['_rankingScore']);
 
             foreach ($item as $name => $value) {
                 if (!\in_array($name, ['_vectors', '_rankingScore', 'content', 'sourceType', 'sourceName', 'score', 'embedding', 'id'])) {

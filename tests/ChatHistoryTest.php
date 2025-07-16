@@ -54,25 +54,25 @@ class ChatHistoryTest extends TestCase
 
     public function test_file_chat_history()
     {
-        $history = new FileChatHistory(__DIR__, 'test');
-        $this->assertFileDoesNotExist(__DIR__.DIRECTORY_SEPARATOR.'neuron_test.chat');
+        $history = new FileChatHistory(sys_get_temp_dir(), 'test');
+        $this->assertFileDoesNotExist(sys_get_temp_dir() . DIRECTORY_SEPARATOR.'neuron_test.chat');
 
         $history->addMessage(new UserMessage('Hello!'));
-        $this->assertFileExists(__DIR__.DIRECTORY_SEPARATOR.'neuron_test.chat');
+        $this->assertFileExists(sys_get_temp_dir() . DIRECTORY_SEPARATOR.'neuron_test.chat');
         $this->assertCount(1, $history->getMessages());
 
         $history->flushAll();
-        $this->assertFileDoesNotExist(__DIR__.DIRECTORY_SEPARATOR.'neuron_test.chat');
+        $this->assertFileDoesNotExist(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'neuron_test.chat');
         $this->assertCount(0, $history->getMessages());
     }
 
     public function test_file_chat_history_init()
     {
-        $history = new FileChatHistory(__DIR__, 'test');
+        $history = new FileChatHistory(sys_get_temp_dir(), 'test');
         $history->addMessage(new UserMessage('Hello!'));
-        $this->assertFileExists(__DIR__.DIRECTORY_SEPARATOR.'neuron_test.chat');
+        $this->assertFileExists(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'neuron_test.chat');
 
-        $history = new FileChatHistory(__DIR__, 'test');
+        $history = new FileChatHistory(sys_get_temp_dir(), 'test');
         $this->assertCount(1, $history->getMessages());
         $history->flushAll();
     }

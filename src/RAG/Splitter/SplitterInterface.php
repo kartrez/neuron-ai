@@ -2,19 +2,19 @@
 
 namespace NeuronAI\RAG\Splitter;
 
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 interface SplitterInterface
 {
     /**
-     * @param  Document  $document
-     * @return array<Document>
+     * @param  DocumentInterface  $document
+     * @return array<DocumentInterface>
      */
-    public function splitDocument(Document $document): array;
+    public function splitDocument(DocumentInterface $document): array;
 
     /**
-     * @param  array<Document>  $documents
-     * @return array<Document>
+     * @param  array<DocumentInterface>  $documents
+     * @return array<DocumentInterface>
      */
     public function splitDocuments(array $documents): array;
 }

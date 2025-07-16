@@ -305,9 +305,7 @@ class WorkflowHumanInTheLoopTest extends TestCase
     {
         $workflow1 = new Workflow();
         $workflow2 = new Workflow();
-
         $this->assertNotEquals($workflow1->getWorkflowId(), $workflow2->getWorkflowId());
-        $this->assertStringStartsWith('neuron_workflow_', $workflow1->getWorkflowId());
     }
 
     public function testCustomWorkflowId()

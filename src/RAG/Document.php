@@ -4,29 +4,33 @@ namespace NeuronAI\RAG;
 
 use Ramsey\Uuid\Uuid;
 
-class Document implements \JsonSerializable
+final class Document implements DocumentInterface
 {
-    public string|int $id;
+    private readonly string|int $id;
 
-    public array $embedding = [];
+    private array $embedding = [];
 
-    public string $sourceType = 'manual';
+    private float $score = 0;
 
-    public string $sourceName = 'manual';
-
-    public float $score = 0;
-
-    public array $metadata = [];
+    private array $metadata = [];
 
     public function __construct(
-        public string $content = '',
+        string|int $id = '',
+        private readonly string $content = '',
+        private readonly string $sourceType = 'manual',
+        private readonly string $sourceName = 'manual',
     ) {
-        $this->id = Uuid::uuid4()->toString();
+        $this->id = $id ?: Uuid::uuid4()->toString();
     }
 
-    public function getId(): string
+    public function getId(): string|int
     {
         return $this->id;
+    }
+
+    public function getMetadata(): array
+    {
+        return $this->metadata;
     }
 
     public function getContent(): string
@@ -54,27 +58,33 @@ class Document implements \JsonSerializable
         return $this->score;
     }
 
-    public function setScore(float $score): Document
+    public function setScore(float $score): DocumentInterface
     {
         $this->score = $score;
         return $this;
     }
 
-    public function addMetadata(string $key, string|int $value): Document
+    public function addMetadata(string $key, string|int $value): DocumentInterface
     {
         $this->metadata[$key] = $value;
+        return $this;
+    }
+
+    public function setEmbedding(array $embedding): DocumentInterface
+    {
+        $this->embedding = $embedding;
         return $this;
     }
 
     public function jsonSerialize(): array
     {
         return [
-            'id' => $this->getId(),
-            'content' => $this->getContent(),
-            'embedding' => $this->getEmbedding(),
-            'sourceType' => $this->getSourceType(),
-            'sourceName' => $this->getSourceName(),
-            'score' => $this->getScore(),
+            'id' => $this->id,
+            'content' => $this->content,
+            'embedding' => $this->embedding,
+            'sourceType' => $this->sourceType,
+            'sourceName' => $this->sourceName,
+            'score' => $this->score,
             'metadata' => $this->metadata,
         ];
     }

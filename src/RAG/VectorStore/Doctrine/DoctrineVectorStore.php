@@ -4,7 +4,7 @@ namespace NeuronAI\RAG\VectorStore\Doctrine;
 
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 
 class DoctrineVectorStore implements VectorStoreInterface
@@ -32,16 +32,9 @@ class DoctrineVectorStore implements VectorStoreInterface
         $this->doctrineVectorStoreType->addCustomisationsTo($this->entityManager);
     }
 
-    public function addDocument(Document $document): void
-    {
-        if (empty($document->embedding)) {
-            throw new \RuntimeException('document embedding must be set before adding a document');
-        }
-
-        $this->persistDocument($document);
-        $this->entityManager->flush();
-    }
-
+    /**
+     * @param DocumentInterface[] $documents
+     */
     public function addDocuments(array $documents): void
     {
         if ($documents === []) {
@@ -54,6 +47,10 @@ class DoctrineVectorStore implements VectorStoreInterface
         $this->entityManager->flush();
     }
 
+    /**
+     * @param list<float> $embedding
+     * @return DocumentInterface[]
+     */
     public function similaritySearch(array $embedding): array
     {
         $repository = $this->entityManager->getRepository($this->entityClassName);
@@ -70,25 +67,21 @@ class DoctrineVectorStore implements VectorStoreInterface
                 ->setParameter($paramName, $value);
         }
 
-        /** @var DoctrineEmbeddingEntityBase[] */
+        /** @var DocumentInterface[] */
         return $qb->getQuery()->getResult();
     }
 
-    private function persistDocument(Document $document): void
+    private function persistDocument(DocumentInterface $document): void
     {
-        if (empty($document->embedding)) {
+        if (empty($document->getEmbedding())) {
             throw new \RuntimeException('Trying to save a document in a vectorStore without embedding');
-        }
-
-        if (!$document instanceof DoctrineEmbeddingEntityBase) {
-            throw new \RuntimeException('Document needs to be an instance of DoctrineEmbeddingEntityBase');
         }
 
         $this->entityManager->persist($document);
     }
 
     /**
-     * @return iterable<Document>
+     * @return iterable<DocumentInterface>
      */
     public function fetchDocumentsByChunkRange(string $sourceType, string $sourceName, int $leftIndex, int $rightIndex): iterable
     {

@@ -13,6 +13,6 @@ class StringDataLoader extends AbstractDataLoader
 
     public function getDocuments(): array
     {
-        return $this->splitter->splitDocument(new Document($this->content));
+        return $this->splitter->splitDocument(new Document(content: $this->content));
     }
 }

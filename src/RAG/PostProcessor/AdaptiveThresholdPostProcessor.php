@@ -3,7 +3,7 @@
 namespace NeuronAI\RAG\PostProcessor;
 
 use NeuronAI\Chat\Messages\Message;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 class AdaptiveThresholdPostProcessor implements PostProcessorInterface
 {
@@ -48,7 +48,7 @@ class AdaptiveThresholdPostProcessor implements PostProcessorInterface
         // Ensure a threshold is not negative
         $threshold = max(0, $threshold);
 
-        return \array_values(\array_filter($documents, fn (Document $document) => $document->getScore() >= $threshold));
+        return \array_values(\array_filter($documents, fn (DocumentInterface $document) => $document->getScore() >= $threshold));
     }
 
     /**

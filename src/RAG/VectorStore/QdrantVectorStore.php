@@ -6,16 +6,17 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 final class QdrantVectorStore implements VectorStoreInterface
 {
     protected Client $client;
-    protected int $topK = 4;
 
-    private function __construct(
+    public function __construct(
         protected string $url,
         protected string $key,
-        protected string $collection = 'default'
+        protected int $topK = 4,
+        protected int $vectorSize = 1024,
     ) {
         $this->client = new Client([
             'base_uri' => trim($this->url, '/').'/',
@@ -26,24 +27,16 @@ final class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
-    public static function create(string $url, string $key, string $collection, int $vectorSize = 1024): self
+    protected function createCollection(string $storeName): void
     {
-        $collectionStore = new self($url, $key, $collection);
-        $collectionStore->createCollection($vectorSize);
-
-        return $collectionStore;
-    }
-
-    protected function createCollection(int $vectorSize): void
-    {
-        if ($this->hasCollection($this->collection)) {
+        if ($this->hasCollection($storeName)) {
             return;
         }
 
-        $this->client->put("collections/{$this->collection}", [
+        $this->client->put("collections/{$storeName}", [
             RequestOptions::JSON => [
                 'vectors' => [
-                    'size' => $vectorSize,
+                    'size' => $this->vectorSize,
                     'distance' => 'Cosine',
                 ]
             ]
@@ -57,47 +50,29 @@ final class QdrantVectorStore implements VectorStoreInterface
         return json_decode($response->getBody()->getContents(), true, JSON_THROW_ON_ERROR)['status'] ?? null === 'ok';
     }
 
-    public function addDocument(Document $document): void
-    {
-        $this->client->put("collections/{$this->collection}/points", [
-            RequestOptions::JSON => [
-                'points' => [
-                    [
-                        'id' => $document->getId(),
-                        'payload' => [
-                            'content' => $document->getContent(),
-                            'sourceType' => $document->getSourceType(),
-                            'sourceName' => $document->getSourceName(),
-                            'metadata' => $document->metadata,
-                        ],
-                        'vector' => $document->getEmbedding(),
-                    ]
-                ]
-            ]
-        ]);
-    }
-
     /**
      * Bulk save documents.
      *
-     * @param Document[] $documents
+     * @param DocumentInterface[] $documents
      * @return void
      * @throws GuzzleException
      */
-    public function addDocuments(array $documents): void
+    public function addDocuments(array $documents, string $storeName = 'default'): void
     {
-        $points = \array_map(fn ($document) => [
+        $this->createCollection($storeName);
+
+        $points = \array_map(fn (DocumentInterface $document) => [
             'id' => $document->getId(),
             'payload' => [
                 'content' => $document->getContent(),
                 'sourceType' => $document->getSourceType(),
                 'sourceName' => $document->getSourceName(),
-                ...$document->metadata,
+                ...$document->getMetadata(),
             ],
             'vector' => $document->getEmbedding(),
         ], $documents);
 
-        $this->client->put("collections/{$this->collection}/points", [
+        $this->client->put("collections/{$storeName}/points", [
             RequestOptions::JSON => [
                 'points' => [
                     ...$points
@@ -106,9 +81,11 @@ final class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
-    public function similaritySearch(array $embedding): iterable
+    public function similaritySearch(array $embedding, string $storeName = 'default'): iterable
     {
-        $response = $this->client->post("collections/{$this->collection}/points/search", [
+        $this->createCollection($storeName);
+
+        $response = $this->client->post("collections/{$storeName}/points/search", [
             RequestOptions::JSON => [
                 'vector' => $embedding,
                 'limit' => $this->topK,
@@ -120,12 +97,14 @@ final class QdrantVectorStore implements VectorStoreInterface
         $response = \json_decode($response, true);
 
         return \array_map(function (array $item) {
-            $document = new Document($item['payload']['content']);
-            $document->id = $item['id'];
-            $document->embedding = $item['vector'];
-            $document->sourceType = $item['payload']['sourceType'];
-            $document->sourceName = $item['payload']['sourceName'];
-            $document->score = $item['score'];
+            $document = (new Document(
+                id: $item['id'],
+                content: $item['payload']['content'],
+                sourceType: $item['payload']['sourceType'],
+                sourceName: $item['payload']['sourceName'],
+            ))
+                ->setEmbedding($item['vector'])
+                ->setScore($item['score']);
 
             foreach ($item['payload'] as $name => $value) {
                 if (!\in_array($name, ['content', 'sourceType', 'sourceName', 'score', 'embedding', 'id'])) {

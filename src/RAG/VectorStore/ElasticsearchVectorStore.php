@@ -7,6 +7,7 @@ use Elastic\Elasticsearch\Exception\ServerResponseException;
 use NeuronAI\RAG\Document;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\Response\Elasticsearch;
+use NeuronAI\RAG\DocumentInterface;
 
 class ElasticsearchVectorStore implements VectorStoreInterface
 {
@@ -21,7 +22,7 @@ class ElasticsearchVectorStore implements VectorStoreInterface
     ) {
     }
 
-    protected function checkIndexStatus(Document $document): void
+    protected function checkIndexStatus(DocumentInterface $document): void
     {
         /** @var Elasticsearch $existResponse */
         $existResponse = $this->client->indices()->exists(['index' => $this->index]);
@@ -46,7 +47,7 @@ class ElasticsearchVectorStore implements VectorStoreInterface
         ];
 
         // Map metadata
-        foreach ($document->metadata as $name => $value) {
+        foreach ($document->getMetadata() as $name => $value) {
             $properties[$name] = [
                 'type' => 'keyword',
             ];
@@ -63,32 +64,7 @@ class ElasticsearchVectorStore implements VectorStoreInterface
     }
 
     /**
-     * @throws \Exception
-     */
-    public function addDocument(Document $document): void
-    {
-        if (empty($document->embedding)) {
-            throw new \Exception('Document embedding must be set before adding a document');
-        }
-
-        $this->checkIndexStatus($document);
-
-        $this->client->index([
-            'index' => $this->index,
-            'body' => [
-                'embedding' => $document->getEmbedding(),
-                'content' => $document->getContent(),
-                'sourceType' => $document->getSourceType(),
-                'sourceName' => $document->getSourceName(),
-                ...$document->metadata,
-            ],
-        ]);
-
-        $this->client->indices()->refresh(['index' => $this->index]);
-    }
-
-    /**
-     * @param  Document[]  $documents
+     * @param  DocumentInterface[]  $documents
      *
      * @throws \Exception
      */
@@ -98,10 +74,6 @@ class ElasticsearchVectorStore implements VectorStoreInterface
             return;
         }
 
-        if (empty($documents[0]->getEmbedding())) {
-            throw new \Exception('Document embedding must be set before adding a document');
-        }
-
         $this->checkIndexStatus($documents[0]);
 
         /*
@@ -109,6 +81,10 @@ class ElasticsearchVectorStore implements VectorStoreInterface
          */
         $params = ['body' => []];
         foreach ($documents as $document) {
+            if (empty($document->getEmbedding())) {
+                throw new \Exception("Document embedding must be set before adding a document by id: {$document->getId()}");
+            }
+
             $params['body'][] = [
                 'index' => [
                     '_index' => $this->index,
@@ -119,7 +95,7 @@ class ElasticsearchVectorStore implements VectorStoreInterface
                 'content' => $document->getContent(),
                 'sourceType' => $document->getSourceType(),
                 'sourceName' => $document->getSourceName(),
-                ...$document->metadata,
+                ...$document->getMetadata(),
             ];
         }
         $this->client->bulk($params);
@@ -161,11 +137,12 @@ class ElasticsearchVectorStore implements VectorStoreInterface
         $response = $this->client->search($searchParams);
 
         return \array_map(function (array $item) {
-            $document = new Document($item['_source']['content']);
-            //$document->embedding = $item['_source']['embedding']; // avoid carrying large data
-            $document->sourceType = $item['_source']['sourceType'];
-            $document->sourceName = $item['_source']['sourceName'];
-            $document->score = $item['_score'];
+            $document = (new Document(
+                content: $item['_source']['content'],
+                sourceType: $item['_source']['sourceType'] ?? '',
+                sourceName: $item['_source']['sourceName'] ?? '',
+            ))
+                ->setScore($item['_score'] ?? 0);
 
             foreach ($item['_source'] as $name => $value) {
                 if (!\in_array($name, ['content', 'sourceType', 'sourceName', 'score', 'embedding', 'id'])) {

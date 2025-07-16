@@ -2,13 +2,13 @@
 
 namespace NeuronAI\RAG\Embeddings;
 
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 abstract class AbstractEmbeddingsProvider implements EmbeddingsProviderInterface
 {
     public function embedDocuments(array $documents): array
     {
-        /** @var Document $document */
+        /** @var DocumentInterface $document */
         foreach ($documents as $index => $document) {
             $documents[$index] = $this->embedDocument($document);
         }
@@ -16,10 +16,10 @@ abstract class AbstractEmbeddingsProvider implements EmbeddingsProviderInterface
         return $documents;
     }
 
-    public function embedDocument(Document $document): Document
+    public function embedDocument(DocumentInterface $document): DocumentInterface
     {
-        $text = $document->formattedContent ?? $document->content;
-        $document->embedding = $this->embedText($text);
+        $text = $document->formattedContent ?? $document->getContent();
+        $document->setEmbedding($this->embedText($text));
 
         return $document;
     }

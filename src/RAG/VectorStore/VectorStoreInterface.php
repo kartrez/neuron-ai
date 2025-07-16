@@ -2,14 +2,12 @@
 
 namespace NeuronAI\RAG\VectorStore;
 
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 interface VectorStoreInterface
 {
-    public function addDocument(Document $document): void;
-
     /**
-     * @param  Document[]  $documents
+     * @param  DocumentInterface[]  $documents
      */
     public function addDocuments(array $documents): void;
 
@@ -17,7 +15,7 @@ interface VectorStoreInterface
      * Return docs most similar to the embedding.
      *
      * @param  float[]  $embedding
-     * @return Document[]
+     * @return DocumentInterface[]
      */
     public function similaritySearch(array $embedding): iterable;
 }

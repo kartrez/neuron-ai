@@ -49,10 +49,10 @@ class CohereRerankerPostProcessorTest extends TestCase
 
         $question = new UserMessage("What is the capital of Italy?");
         $documents = [
-            new Document("Paris is the capital of France"),
-            new Document("Rome is the capital of Italy"),
-            new Document("Madrid is the capital of Spain"),
-            new Document("London is the capital of the United Kingdom")
+            new Document(content: "Paris is the capital of France"),
+            new Document(content: "Rome is the capital of Italy"),
+            new Document(content: "Madrid is the capital of Spain"),
+            new Document(content: "London is the capital of the United Kingdom")
         ];
 
         $result = $postProcessor->process($question, $documents);
@@ -99,10 +99,10 @@ class CohereRerankerPostProcessorTest extends TestCase
 
         $question = new UserMessage("What is the capital of Italy?");
         $documents = [
-            new Document("Paris is the capital of France"),
-            new Document("Rome is the capital of Italy"),
-            new Document("Madrid is the capital of Spain"),
-            new Document("London is the capital of the United Kingdom")
+            new Document(content: "Paris is the capital of France"),
+            new Document(content: "Rome is the capital of Italy"),
+            new Document(content: "Madrid is the capital of Spain"),
+            new Document(content: "London is the capital of the United Kingdom")
         ];
 
         $result = $postProcessor->process($question, $documents);

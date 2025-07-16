@@ -4,6 +4,7 @@ namespace NeuronAI\RAG\Splitter;
 
 use NeuronAI\RAG\Document;
 use InvalidArgumentException;
+use NeuronAI\RAG\DocumentInterface;
 
 /**
  * Splits text into sentences, groups into word-based chunks, and applies
@@ -31,10 +32,10 @@ class SentenceTextSplitter implements SplitterInterface
     /**
      * Splits text into word-based chunks, preserving sentence boundaries.
      *
-     * @param Document $document
+     * @param DocumentInterface $document
      * @return Document[] Array of Document chunks
      */
-    public function splitDocument(Document $document): array
+    public function splitDocument(DocumentInterface $document): array
     {
         // Split by paragraphs (2 or more newlines)
         $paragraphs = preg_split('/\n{2,}/', $document->getContent());
@@ -81,9 +82,11 @@ class SentenceTextSplitter implements SplitterInterface
 
         $split = [];
         foreach ($chunks as $chunk) {
-            $newDocument = new Document($chunk);
-            $newDocument->sourceType = $document->getSourceType();
-            $newDocument->sourceName = $document->getSourceName();
+            $newDocument = new Document(
+                content: $chunk,
+                sourceType: $document->getSourceType(),
+                sourceName: $document->getSourceName()
+            );
             $split[] = $newDocument;
         }
 
@@ -91,7 +94,7 @@ class SentenceTextSplitter implements SplitterInterface
     }
 
     /**
-     * @param  array<Document>  $documents
+     * @param  array<DocumentInterface>  $documents
      * @return array<Document>
      */
     public function splitDocuments(array $documents): array

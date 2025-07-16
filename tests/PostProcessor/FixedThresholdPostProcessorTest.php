@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\PostProcessor;
+namespace NeuronAI\Tests\PostProcessor;
 
 use NeuronAI\Chat\Messages\UserMessage;
 use NeuronAI\RAG\Document;

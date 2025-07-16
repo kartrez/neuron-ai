@@ -5,6 +5,7 @@ namespace NeuronAI\RAG\VectorStore;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentInterface;
 
 class PineconeVectorStore implements VectorStoreInterface
 {
@@ -37,30 +38,34 @@ class PineconeVectorStore implements VectorStoreInterface
         ]);
     }
 
-    public function addDocument(Document $document): void
-    {
-        $this->addDocuments([$document]);
-    }
-
+    /**
+     * @param DocumentInterface[] $documents
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function addDocuments(array $documents): void
     {
         $this->client->post("vectors/upsert", [
             RequestOptions::JSON => [
                 'namespace' => $this->namespace,
-                'vectors' => \array_map(fn (Document $document) => [
+                'vectors' => \array_map(fn (DocumentInterface $document) => [
                     'id' => $document->getId(),
                     'values' => $document->getEmbedding(),
                     'metadata' => [
                         'content' => $document->getContent(),
                         'sourceType' => $document->getSourceType(),
                         'sourceName' => $document->getSourceName(),
-                        ...$document->metadata,
+                        ...$document->getMetadata(),
                     ],
                 ], $documents)
             ]
         ]);
     }
 
+    /**
+     * @param list<float> $embedding
+     * @return Document[]
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function similaritySearch(array $embedding): iterable
     {
         $result = $this->client->post("query", [
@@ -76,13 +81,14 @@ class PineconeVectorStore implements VectorStoreInterface
         $result = \json_decode($result, true);
 
         return \array_map(function (array $item) {
-            $document = new Document();
-            $document->id = $item['id'];
-            $document->embedding = $item['values'];
-            $document->content = $item['metadata']['content'];
-            $document->sourceType = $item['metadata']['sourceType'];
-            $document->sourceName = $item['metadata']['sourceName'];
-            $document->score = $item['score'];
+            $document = (new Document(
+                id: $item['id'],
+                content: $item['metadata']['content'],
+                sourceType: $item['metadata']['sourceType'],
+                sourceName: $item['metadata']['sourceName'],
+            ))
+                ->setEmbedding($item['values'])
+                ->setScore($item['score']);
 
             foreach ($item['metadata'] as $name => $value) {
                 if (!\in_array($name, ['content', 'sourceType', 'sourceName', 'score', 'embedding', 'id'])) {

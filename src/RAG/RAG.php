@@ -66,7 +66,7 @@ class RAG extends Agent
     /**
      * Set the system message based on the context.
      *
-     * @param Document[] $documents
+     * @param DocumentInterface[] $documents
      */
     public function withDocumentsContext(array $documents): AgentInterface
     {
@@ -89,14 +89,14 @@ class RAG extends Agent
     /**
      * Retrieve relevant documents from the vector store.
      *
-     * @return Document[]
+     * @return DocumentInterface[]
      */
-    public function retrieveDocuments(Message $question): array
+    public function retrieveDocuments(Message $question, string $storeName = 'default'): array
     {
         $this->notify('rag-vectorstore-searching', new VectorStoreSearching($question));
 
         $documents = $this->resolveVectorStore()->similaritySearch(
-            $this->resolveEmbeddingsProvider()->embedText($question->getContent()),
+            $this->resolveEmbeddingsProvider()->embedText($question->getContent()), $storeName
         );
 
         $retrievedDocs = [];
@@ -117,8 +117,8 @@ class RAG extends Agent
      * Apply a series of postprocessors to the retrieved documents.
      *
      * @param Message $question The question to process the documents for.
-     * @param Document[] $documents The documents to process.
-     * @return Document[] The processed documents.
+     * @param DocumentInterface[] $documents The documents to process.
+     * @return DocumentInterface[] The processed documents.
      */
     protected function applyPostProcessors(Message $question, array $documents): array
     {
@@ -134,13 +134,13 @@ class RAG extends Agent
     /**
      * Feed the vector store with documents.
      *
-     * @param Document[] $documents
+     * @param DocumentInterface[] $documents
      * @return void
      */
-    public function addDocuments(array $documents): void
+    public function addDocuments(array $documents, string $storeName = 'default'): void
     {
         $this->resolveVectorStore()->addDocuments(
-            $this->resolveEmbeddingsProvider()->embedDocuments($documents)
+            $this->resolveEmbeddingsProvider()->embedDocuments($documents), $storeName
         );
     }
 
