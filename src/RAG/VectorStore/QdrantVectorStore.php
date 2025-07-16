@@ -45,9 +45,13 @@ final class QdrantVectorStore implements VectorStoreInterface
 
     protected function hasCollection(string $collection): bool
     {
-        $response = $this->client->get("collections/{$collection}");
+        try {
+            $response = $this->client->get("collections/{$collection}");
 
-        return json_decode($response->getBody()->getContents(), true, JSON_THROW_ON_ERROR)['status'] ?? null === 'ok';
+            return json_decode($response->getBody()->getContents(), true, JSON_THROW_ON_ERROR)['status'] ?? null === 'ok';
+        } catch (GuzzleException) {
+            return false;
+        }
     }
 
     /**
