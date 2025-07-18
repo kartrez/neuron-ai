@@ -27,13 +27,13 @@ final class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
-    protected function createCollection(string $storeName): void
+    protected function createCollection(string $collection): void
     {
-        if ($this->hasCollection($storeName)) {
+        if ($this->hasCollection($collection)) {
             return;
         }
 
-        $this->client->put("collections/{$storeName}", [
+        $this->client->put("collections/{$collection}", [
             RequestOptions::JSON => [
                 'vectors' => [
                     'size' => $this->vectorSize,
@@ -61,9 +61,9 @@ final class QdrantVectorStore implements VectorStoreInterface
      * @return void
      * @throws GuzzleException
      */
-    public function addDocuments(array $documents, string $storeName = 'default'): void
+    public function addDocuments(array $documents, string $collection = 'default'): void
     {
-        $this->createCollection($storeName);
+        $this->createCollection($collection);
 
         $points = \array_map(fn (DocumentInterface $document) => [
             'id' => $document->getId(),
@@ -76,7 +76,7 @@ final class QdrantVectorStore implements VectorStoreInterface
             'vector' => $document->getEmbedding(),
         ], $documents);
 
-        $this->client->put("collections/{$storeName}/points", [
+        $this->client->put("collections/{$collection}/points", [
             RequestOptions::JSON => [
                 'points' => [
                     ...$points
@@ -85,11 +85,11 @@ final class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
-    public function similaritySearch(array $embedding, string $storeName = 'default'): iterable
+    public function similaritySearch(array $embedding, string $collection = 'default'): iterable
     {
-        $this->createCollection($storeName);
+        $this->createCollection($collection);
 
-        $response = $this->client->post("collections/{$storeName}/points/search", [
+        $response = $this->client->post("collections/{$collection}/points/search", [
             RequestOptions::JSON => [
                 'vector' => $embedding,
                 'limit' => $this->topK,

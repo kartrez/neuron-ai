@@ -91,12 +91,12 @@ class RAG extends Agent
      *
      * @return DocumentInterface[]
      */
-    public function retrieveDocuments(Message $question, string $storeName = 'default'): array
+    public function retrieveDocuments(Message $question, string $collection = 'default'): array
     {
         $this->notify('rag-vectorstore-searching', new VectorStoreSearching($question));
 
         $documents = $this->resolveVectorStore()->similaritySearch(
-            $this->resolveEmbeddingsProvider()->embedText($question->getContent()), $storeName
+            $this->resolveEmbeddingsProvider()->embedText($question->getContent()), $collection
         );
 
         $retrievedDocs = [];
@@ -137,10 +137,10 @@ class RAG extends Agent
      * @param DocumentInterface[] $documents
      * @return void
      */
-    public function addDocuments(array $documents, string $storeName = 'default'): void
+    public function addDocuments(array $documents, string $collection = 'default'): void
     {
         $this->resolveVectorStore()->addDocuments(
-            $this->resolveEmbeddingsProvider()->embedDocuments($documents), $storeName
+            $this->resolveEmbeddingsProvider()->embedDocuments($documents), $collection
         );
     }
 

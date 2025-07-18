@@ -5,10 +5,13 @@ namespace NeuronAI\RAG\DataLoader;
 use NeuronAI\RAG\Document;
 use NeuronAI\RAG\DocumentInterface;
 
+/**
+ * @template fileExtension as string
+ */
 class FileDataLoader extends AbstractDataLoader
 {
     /**
-     * @var array<string, ReaderInterface>
+     * @var array<fileExtension, ReaderInterface>
      */
     protected array $readers = [];
 
@@ -25,7 +28,7 @@ class FileDataLoader extends AbstractDataLoader
     }
 
     /**
-     * @param array $readers
+     * @param array<fileExtension, ReaderInterface> $readers
      * @return FileDataLoader
      */
     public function setReaders(array $readers): self
