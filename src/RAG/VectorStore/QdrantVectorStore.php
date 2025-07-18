@@ -54,6 +54,14 @@ final class QdrantVectorStore implements VectorStoreInterface
         }
     }
 
+    public function deleteCollection(string $collection): void
+    {
+        if (!$this->hasCollection($collection)) {
+            return;
+        }
+        $this->client->delete("collections/{$collection}");
+    }
+
     /**
      * Bulk save documents.
      *
