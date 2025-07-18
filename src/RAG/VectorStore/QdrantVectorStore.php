@@ -27,7 +27,7 @@ final class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
-    protected function createCollection(string $collection): void
+    public function createCollection(string $collection): void
     {
         if ($this->hasCollection($collection)) {
             return;
@@ -43,7 +43,7 @@ final class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
-    protected function hasCollection(string $collection): bool
+    public function hasCollection(string $collection): bool
     {
         try {
             $response = $this->client->get("collections/{$collection}");
