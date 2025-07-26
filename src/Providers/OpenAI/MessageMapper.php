@@ -8,6 +8,7 @@ use NeuronAI\Chat\Enums\AttachmentType;
 use NeuronAI\Chat\Enums\MessageRole;
 use NeuronAI\Chat\Messages\AssistantMessage;
 use NeuronAI\Chat\Messages\Message;
+use NeuronAI\Chat\Messages\SystemMessage;
 use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\Chat\Messages\ToolCallResultMessage;
 use NeuronAI\Chat\Messages\UserMessage;
@@ -24,6 +25,7 @@ class MessageMapper implements MessageMapperInterface
             match ($message::class) {
                 Message::class,
                 UserMessage::class,
+                SystemMessage::class,
                 AssistantMessage::class => $this->mapMessage($message),
                 ToolCallMessage::class => $this->mapToolCall($message),
                 ToolCallResultMessage::class => $this->mapToolsResult($message),
