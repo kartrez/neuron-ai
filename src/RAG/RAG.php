@@ -4,6 +4,7 @@ namespace NeuronAI\RAG;
 
 use NeuronAI\Agent;
 use NeuronAI\AgentInterface;
+use NeuronAI\Chat\Messages\AssistantMessage;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\SystemMessage;
 use NeuronAI\Exceptions\AgentException;
@@ -34,14 +35,14 @@ class RAG extends Agent
      * @throws ToolCallableNotSet
      * @throws \Throwable
      */
-    public function answer(Message $question, SystemMessage $systemPrompt = null): Message
+    public function answer(Message $question, SystemMessage|AssistantMessage $message = null): Message
     {
         $this->notify('rag-start');
 
         $this->retrieval($question);
         $chatMsgs = [];
-        if ($systemPrompt !== null) {
-            $chatMsgs[] = $systemPrompt;
+        if ($message !== null) {
+            $chatMsgs[] = $message;
         }
         $chatMsgs[] = $question;
         $response = $this->chat($chatMsgs);
