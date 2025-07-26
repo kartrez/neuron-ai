@@ -31,21 +31,18 @@ class RAG extends Agent
     protected array $postProcessors = [];
 
     /**
-     * @throws MissingCallbackParameter
-     * @throws ToolCallableNotSet
+     * @param Message $question
+     * @param list<SystemMessage|AssistantMessage> $messages
+     * @return Message
      * @throws \Throwable
      */
-    public function answer(Message $question, SystemMessage|AssistantMessage $message = null): Message
+    public function answer(Message $question, array $messages = []): Message
     {
         $this->notify('rag-start');
 
         $this->retrieval($question);
-        $chatMsgs = [];
-        if ($message !== null) {
-            $chatMsgs[] = $message;
-        }
-        $chatMsgs[] = $question;
-        $response = $this->chat($chatMsgs);
+        $messages[] = $question;
+        $response = $this->chat($messages);
 
         $this->notify('rag-stop');
         return $response;
