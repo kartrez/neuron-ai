@@ -32,37 +32,36 @@ class RAG extends Agent
 
     /**
      * @param Message $question
-     * @param list<SystemMessage|AssistantMessage> $messages
      * @return Message
      * @throws \Throwable
      */
-    public function answer(Message $question, array $messages = []): Message
+    public function answer(Message $question, string $collection = 'default'): Message
     {
         $this->notify('rag-start');
 
-        $this->retrieval($question);
-        $messages[] = $question;
-        $response = $this->chat($messages);
+        $this->retrieval($question, $collection);
+
+        $response = $this->chat($question);
 
         $this->notify('rag-stop');
         return $response;
     }
 
-    public function streamAnswer(Message $question): \Generator
+    public function streamAnswer(Message $question, string $collection = 'default'): \Generator
     {
         $this->notify('rag-start');
 
-        $this->retrieval($question);
+        $this->retrieval($question, $collection);
 
         yield from $this->stream($question);
 
         $this->notify('rag-stop');
     }
 
-    protected function retrieval(Message $question): void
+    protected function retrieval(Message $question, string $collection = 'default'): void
     {
         $this->withDocumentsContext(
-            $this->retrieveDocuments($question)
+            $this->retrieveDocuments($question, $collection)
         );
     }
 
