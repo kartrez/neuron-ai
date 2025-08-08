@@ -5,6 +5,9 @@ namespace NeuronAI\Chat\Messages;
 use NeuronAI\Chat\Attachments\Attachment;
 use NeuronAI\Chat\Enums\MessageRole;
 
+/**
+ * @template TMessage of array{role: 'user|asistant|system', message: string}
+ */
 class Message implements \JsonSerializable
 {
     protected ?Usage $usage = null;
@@ -16,6 +19,29 @@ class Message implements \JsonSerializable
         protected MessageRole $role,
         protected array|string|int|float|null $content = null
     ) {
+    }
+
+    /***
+     * @param TMessage $message
+     * @return self
+     */
+    public static function buildMessage(array $message): self
+    {
+        return new self(MessageRole::from($message['role']), $message['message']);
+    }
+
+    /**
+     * @param list<TMessage>
+     * @return list<static>
+     */
+    public static function buildMessages(array $messages) : array
+    {
+        $result = [];
+        foreach ($messages as $message) {
+            $result[] = self::buildMessage($message);
+        }
+
+        return $result;
     }
 
     public function getRole(): string

@@ -31,11 +31,11 @@ class RAG extends Agent
     protected array $postProcessors = [];
 
     /**
-     * @param Message $question
+     * @param Message|Message[] $messages
      * @return Message
      * @throws \Throwable
      */
-    public function answer(Message $question, string $collection = 'default'): Message
+    public function answer(Message|array $question, string $collection = 'default'): Message
     {
         $this->notify('rag-start');
 
@@ -47,7 +47,7 @@ class RAG extends Agent
         return $response;
     }
 
-    public function streamAnswer(Message $question, string $collection = 'default'): \Generator
+    public function streamAnswer(Message|array $question, string $collection = 'default'): \Generator
     {
         $this->notify('rag-start');
 
@@ -58,7 +58,12 @@ class RAG extends Agent
         $this->notify('rag-stop');
     }
 
-    protected function retrieval(Message $question, string $collection = 'default'): void
+    /**
+     * @param Message|Message[] $question
+     * @param string $collection
+     * @return void
+     */
+    protected function retrieval(Message|array $question, string $collection = 'default'): void
     {
         $this->withDocumentsContext(
             $this->retrieveDocuments($question, $collection)
@@ -90,29 +95,35 @@ class RAG extends Agent
 
     /**
      * Retrieve relevant documents from the vector store.
-     *
+     * @param Message|Message[] $question
      * @return DocumentInterface[]
      */
-    public function retrieveDocuments(Message $question, string $collection = 'default'): array
+    public function retrieveDocuments(Message|array $questions, string $collection = 'default'): array
     {
-        $this->notify('rag-vectorstore-searching', new VectorStoreSearching($question));
+        $questions = is_array($questions) ? $questions: [$questions];
+        $result = [];
+        foreach ($questions as $question) {
+            $this->notify('rag-vectorstore-searching', new VectorStoreSearching($question));
 
-        $documents = $this->resolveVectorStore()->similaritySearch(
-            $this->resolveEmbeddingsProvider()->embedText($question->getContent()), $collection
-        );
+            $documents = $this->resolveVectorStore()->similaritySearch(
+                $this->resolveEmbeddingsProvider()->embedText($question->getContent()), $collection
+            );
 
-        $retrievedDocs = [];
+            $retrievedDocs = [];
 
-        foreach ($documents as $document) {
-            //md5 for removing duplicates
-            $retrievedDocs[\md5($document->getContent())] = $document;
+            foreach ($documents as $document) {
+                //md5 for removing duplicates
+                $retrievedDocs[\md5($document->getContent())] = $document;
+            }
+
+            $retrievedDocs = \array_values($retrievedDocs);
+
+            $this->notify('rag-vectorstore-result', new VectorStoreResult($question, $retrievedDocs));
+
+            $result = [...$result, ...$this->applyPostProcessors($question, $retrievedDocs)];
         }
 
-        $retrievedDocs = \array_values($retrievedDocs);
-
-        $this->notify('rag-vectorstore-result', new VectorStoreResult($question, $retrievedDocs));
-
-        return $this->applyPostProcessors($question, $retrievedDocs);
+        return $result;
     }
 
     /**
