@@ -6,7 +6,7 @@ use NeuronAI\Chat\Attachments\Attachment;
 use NeuronAI\Chat\Enums\MessageRole;
 
 /**
- * @template TMessage of array{role: 'user|asistant|system', message: string}
+ * @template TMessage of array{role: 'user|asistant|system', content: string}
  */
 class Message implements \JsonSerializable
 {
