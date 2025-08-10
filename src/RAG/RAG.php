@@ -4,6 +4,7 @@ namespace NeuronAI\RAG;
 
 use NeuronAI\Agent;
 use NeuronAI\AgentInterface;
+use NeuronAI\Chat\Enums\MessageRole;
 use NeuronAI\Chat\Messages\AssistantMessage;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\SystemMessage;
@@ -68,6 +69,15 @@ class RAG extends Agent
         $this->withDocumentsContext(
             $this->retrieveDocuments($question, $collection)
         );
+    }
+
+    public function getSystemPrompt(Message|array $question, string $collection = 'default'): Message
+    {
+        $this->withDocumentsContext(
+            $this->retrieveDocuments($question, $collection)
+        );
+
+        return new Message(role: MessageRole::SYSTEM, content: $this->instructions());
     }
 
     /**
