@@ -27,7 +27,7 @@ class Message implements \JsonSerializable
      */
     public static function buildMessage(array $message): self
     {
-        return new self(MessageRole::from($message['role']), $message['content']);
+        return new self(MessageRole::from($message['role']) ?? MessageRole::USER, $message['content']);
     }
 
     /**
