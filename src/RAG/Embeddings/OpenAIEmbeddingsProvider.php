@@ -10,6 +10,8 @@ class OpenAIEmbeddingsProvider extends AbstractEmbeddingsProvider
 
     protected string $baseUri = 'https://api.openai.com/v1/embeddings';
 
+    protected array $usage = [];
+
     public function __construct(
         protected string $key,
         protected string $model,
@@ -25,6 +27,10 @@ class OpenAIEmbeddingsProvider extends AbstractEmbeddingsProvider
         ]);
     }
 
+    /**
+     * @return array{embedding: float[], usage: array{prompt_tokens: int, total_tokens: int}}
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function embedText(string $text): array
     {
         $response = $this->client->post('', [
@@ -37,7 +43,16 @@ class OpenAIEmbeddingsProvider extends AbstractEmbeddingsProvider
         ]);
 
         $response = \json_decode($response->getBody()->getContents(), true);
+        $this->usage = $response['usage'];
 
         return $response['data'][0]['embedding'];
+    }
+
+    /**
+     * @return array{prompt_tokens: int, total_tokens: int}
+     */
+    public function getUsage(): array
+    {
+        return $this->usage;
     }
 }
