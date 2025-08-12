@@ -7,6 +7,11 @@ use NeuronAI\RAG\DocumentInterface;
 interface EmbeddingsProviderInterface
 {
     /**
+     * @return array{prompt_tokens: int, total_tokens: int}
+     */
+    public function getUsage(): array;
+
+    /**
      * @return float[]
      */
     public function embedText(string $text): array;

@@ -39,4 +39,9 @@ class VoyageEmbeddingsProvider extends AbstractEmbeddingsProvider
 
         return $response['data'][0]['embedding'];
     }
+
+    public function getUsage(): array
+    {
+        return [];
+    }
 }

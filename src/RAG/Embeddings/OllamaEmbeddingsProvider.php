@@ -31,4 +31,9 @@ class OllamaEmbeddingsProvider extends AbstractEmbeddingsProvider
 
         return $response['embeddings'][0];
     }
+
+    public function getUsage(): array
+    {
+        return [];
+    }
 }
