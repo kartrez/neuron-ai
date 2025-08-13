@@ -3,6 +3,7 @@
 namespace NeuronAI\RAG\Embeddings;
 
 use GuzzleHttp\Client;
+use Psr\Log\LoggerInterface;
 
 class OpenAIEmbeddingsProvider extends AbstractEmbeddingsProvider
 {
@@ -15,7 +16,8 @@ class OpenAIEmbeddingsProvider extends AbstractEmbeddingsProvider
     public function __construct(
         protected string $key,
         protected string $model,
-        protected int $dimensions = 1024
+        protected int $dimensions = 1024,
+        protected ?LoggerInterface $logger = null,
     ) {
         $this->client = new Client([
             'base_uri' => $this->baseUri,
@@ -43,6 +45,7 @@ class OpenAIEmbeddingsProvider extends AbstractEmbeddingsProvider
         ]);
 
         $response = \json_decode($response->getBody()->getContents(), true);
+        $this->logger->info("Embedding response: " . json_encode($response));
         $this->usage = $response['usage'];
 
         return $response['data'][0]['embedding'];
