@@ -34,14 +34,11 @@ class VoyageEmbeddingsProvider extends AbstractEmbeddingsProvider
                 'output_dimension' => $this->dimensions,
             ]
         ]);
-
         $response = \json_decode($response->getBody()->getContents(), true);
 
-        return $response['data'][0]['embedding'];
-    }
-
-    public function getUsage(): array
-    {
-        return [];
+        return [
+            'embedding' => $response['data'][0]['embedding'],
+            'total_tokens' => $response['usage']['total_tokens']
+        ];
     }
 }

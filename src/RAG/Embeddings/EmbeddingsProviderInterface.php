@@ -7,16 +7,18 @@ use NeuronAI\RAG\DocumentInterface;
 interface EmbeddingsProviderInterface
 {
     /**
-     * @return array{prompt_tokens: int, total_tokens: int}
-     */
-    public function getUsage(): array;
-
-    /**
-     * @return float[]
+     * @return array{embedding: float[], total_tokens: int}
      */
     public function embedText(string $text): array;
 
-    public function embedDocument(DocumentInterface $document): DocumentInterface;
+    /**
+     * @param DocumentInterface $document
+     * @return array{document: DocumentInterface, total_tokens: int}
+     */
+    public function embedDocument(DocumentInterface $document): array;
 
+    /**
+     * @return array{documents: list<DocumentInterface>, total_tokens: int}
+     */
     public function embedDocuments(array $documents): array;
 }

@@ -29,11 +29,9 @@ class OllamaEmbeddingsProvider extends AbstractEmbeddingsProvider
 
         $response = json_decode($response, true);
 
-        return $response['embeddings'][0];
-    }
-
-    public function getUsage(): array
-    {
-        return [];
+        return [
+            'embedding' => $response['embeddings'][0],
+            'total_tokens' => $response['usage']['total_tokens']
+        ];
     }
 }

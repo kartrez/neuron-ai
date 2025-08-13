@@ -116,7 +116,7 @@ class RAG extends Agent
             $this->notify('rag-vectorstore-searching', new VectorStoreSearching($question));
 
             $documents = $this->resolveVectorStore()->similaritySearch(
-                $this->resolveEmbeddingsProvider()->embedText($question->getContent()), $collection
+                $this->resolveEmbeddingsProvider()->embedText($question->getContent())['embedding'], $collection
             );
 
             $retrievedDocs = [];
@@ -158,13 +158,17 @@ class RAG extends Agent
      * Feed the vector store with documents.
      *
      * @param DocumentInterface[] $documents
-     * @return void
+     * @return int total usage tokens
      */
-    public function addDocuments(array $documents, string $collection = 'default'): void
+    public function addDocuments(array $documents, string $collection = 'default'): int
     {
+        $embedded = $this->resolveEmbeddingsProvider()->embedDocuments($documents);
+
         $this->resolveVectorStore()->addDocuments(
-            $this->resolveEmbeddingsProvider()->embedDocuments($documents), $collection
+            $embedded['documents'], $collection
         );
+
+        return $embedded['total_tokens'];
     }
 
     /**

@@ -6,21 +6,38 @@ use NeuronAI\RAG\DocumentInterface;
 
 abstract class AbstractEmbeddingsProvider implements EmbeddingsProviderInterface
 {
+    /**
+     * @return array{documents: list<DocumentInterface>, total_tokens: int}
+     */
     public function embedDocuments(array $documents): array
     {
+        $totalTokens = 0;
         /** @var DocumentInterface $document */
         foreach ($documents as $index => $document) {
-            $documents[$index] = $this->embedDocument($document);
+            $embeddedDoc = $this->embedDocument($document);
+            $documents[$index] = $embeddedDoc['document'];
+            $totalTokens += $embeddedDoc['total_tokens'];
         }
 
-        return $documents;
+        return [
+            'documents' => $documents,
+            'total_tokens' => $totalTokens
+        ];
     }
 
-    public function embedDocument(DocumentInterface $document): DocumentInterface
+    /**
+     * @param DocumentInterface $document
+     * @return array{document: DocumentInterface, total_tokens: int}
+     */
+    public function embedDocument(DocumentInterface $document): array
     {
         $text = $document->formattedContent ?? $document->getContent();
-        $document->setEmbedding($this->embedText($text));
+        $embedded = $this->embedText($text);
+        $document->setEmbedding($embedded['embedding']);
 
-        return $document;
+        return [
+            'document' => $document,
+            'total_tokens' => $embedded['total_tokens']
+        ];
     }
 }
