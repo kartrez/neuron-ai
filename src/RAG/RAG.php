@@ -71,6 +71,15 @@ class RAG extends Agent
         );
     }
 
+    public function instructions(): string
+    {
+        return <<<TEXT
+            You are a technical expert who responds STRICTLY based on the data in EXTRA-CONTEXT.
+            FORBIDDEN: using knowledge outside the context, making assumptions, or generating data.
+            IF: insufficient information, respond with: 'No data in the provided context.'
+        TEXT;
+    }
+
     public function getSystemPrompt(Message|array $question, string $collection = 'default'): Message
     {
         $this->withDocumentsContext(
