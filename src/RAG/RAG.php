@@ -77,7 +77,7 @@ class RAG extends Agent
             $this->retrieveDocuments($question, $collection)
         );
 
-        return new Message(role: MessageRole::SYSTEM, content: $this->instructions());
+        return new Message(role: MessageRole::SYSTEM, content: $this->resolveInstructions());
     }
 
     /**
