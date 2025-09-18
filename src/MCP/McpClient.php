@@ -15,7 +15,7 @@ class McpClient
     {
         if (\array_key_exists('command', $config)) {
             $this->transport = $transport ?? new StdioTransport($config);
-            $this->transport->initialize();
+            $this->transport->connect();
             $this->initialize();
         } else {
             // todo: implement support for SSE with URL config property
@@ -40,13 +40,13 @@ class McpClient
                 ],
             ],
         ];
-        $this->transport->send(\json_encode($request, JSON_UNESCAPED_UNICODE));
+        $this->transport->send($request);
         $this->transport->receive();
         $request = [
             "jsonrpc" => "2.0",
             "method"  => "notifications/initialized",
         ];
-        $this->transport->send(\json_encode($request, JSON_UNESCAPED_UNICODE));
+        $this->transport->send($request);
     }
 
     /**
@@ -70,7 +70,7 @@ class McpClient
                 $request['params'] = ['cursor' => $response['result']['nextCursor']];
             }
 
-            $this->transport->send(\json_encode($request, JSON_UNESCAPED_UNICODE));
+            $this->transport->send($request);
             $response = $this->transport->receive();
 
             $tools = \array_merge($tools, $response['result']['tools']);
@@ -96,8 +96,7 @@ class McpClient
             ]
         ];
 
-        $this->transport->send(\json_encode($request, JSON_UNESCAPED_UNICODE));
-
-        return iterator_to_array($this->transport->receive());
+        $this->transport->send($request);
+        return $this->transport->receive();
     }
 }

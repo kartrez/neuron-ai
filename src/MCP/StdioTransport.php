@@ -17,7 +17,7 @@ class StdioTransport implements McpTransportInterface
     /**
      * Connect to the MCP server by spawning the process
      */
-    public function initialize(): void
+    public function connect(): void
     {
         $descriptorSpec = [
             0 => ["pipe", "r"],  // stdin
@@ -65,9 +65,8 @@ class StdioTransport implements McpTransportInterface
 
     /**
      * Send a request to the MCP server
-     * @param string $jsonData Json string
      */
-    public function send(string $jsonData): void
+    public function send($data): void
     {
         if (!\is_resource($this->process)) {
             throw new McpException("Process is not running");
@@ -76,6 +75,11 @@ class StdioTransport implements McpTransportInterface
         $status = \proc_get_status($this->process);
         if (!$status['running']) {
             throw new McpException("MCP server process is not running");
+        }
+
+        $jsonData = \json_encode($data, JSON_UNESCAPED_UNICODE);
+        if ($jsonData === false) {
+            throw new McpException("Failed to encode request data to JSON");
         }
 
         $bytesWritten = \fwrite($this->pipes[0], $jsonData . "\n");
@@ -89,7 +93,7 @@ class StdioTransport implements McpTransportInterface
     /**
      * Receive a response from the MCP server
      */
-    public function receive(): \Generator
+    public function receive(): array
     {
         if (!\is_resource($this->process)) {
             throw new McpException("Process is not running");
@@ -120,7 +124,7 @@ class StdioTransport implements McpTransportInterface
 
                     $decoded = \json_decode($line, true);
                     if ($decoded !== null) {
-                        yield $decoded;
+                        return $decoded;
                     }
                 }
             }
@@ -134,7 +138,7 @@ class StdioTransport implements McpTransportInterface
     /**
      * Disconnect from the MCP server
      */
-    public function close(): void
+    public function disconnect(): void
     {
         if (\is_resource($this->process)) {
             // Close all pipe handles
@@ -160,10 +164,5 @@ class StdioTransport implements McpTransportInterface
             \proc_close($this->process);
             $this->process = null;
         }
-    }
-
-    public function isConnected(): bool
-    {
-        return true;
     }
 }
