@@ -43,7 +43,12 @@ final class SocketTransport implements McpTransportInterface
         if ($this->socket === null) {
             throw new McpException('Socket is not connected');
         }
-        $data['env'] = $this->env;
+        if (isset($data['params']['arguments'])) {
+            $data['params']['arguments']['env'] = $this->env;
+        } else {
+            $data['env'] = $this->env;
+        }
+
 
         $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
         if ($jsonData === false) {
