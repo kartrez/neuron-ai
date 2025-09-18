@@ -11,17 +11,17 @@ class McpClient
     /**
      * Create a new MCP client with the given transport
      */
-    public function __construct(array $config, ?McpTransportInterface $transport = null)
+    public function __construct(array $config)
     {
         if (\array_key_exists('command', $config)) {
-            $this->transport = $transport ?? new StdioTransport($config);
+            $this->transport = new StdioTransport($config);
         } else if (\array_key_exists('host', $config) || \array_key_exists('port', $config)) {
-            $this->transport = $transport ?? new SocketTransport($config);
+            $this->transport = new SocketTransport($config);
         } else {
             // todo: implement support for SSE with URL config property
             throw new McpException('Transport not supported!');
         }
-        
+
         $this->transport->connect();
         $this->initialize();
     }

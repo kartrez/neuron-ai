@@ -7,6 +7,7 @@ final class SocketTransport implements McpTransportInterface
     private string $host;
     private int $port;
     private int $timeout;
+    private array $env;
     private ?\Socket $socket = null;
 
     public function __construct(array $config)
@@ -14,6 +15,7 @@ final class SocketTransport implements McpTransportInterface
         $this->host = $config['host'] ?? '127.0.0.1';
         $this->port = $config['port'] ?? 3000;
         $this->timeout = $config['timeout'] ?? 30;
+        $this->env = $config['env'] ?? [];
     }
 
     public function connect(): void
@@ -41,6 +43,7 @@ final class SocketTransport implements McpTransportInterface
         if ($this->socket === null) {
             throw new McpException('Socket is not connected');
         }
+        $data['env'] = $this->env;
 
         $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
         if ($jsonData === false) {
