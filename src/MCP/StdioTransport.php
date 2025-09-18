@@ -95,35 +95,37 @@ class StdioTransport implements McpTransportInterface
             throw new McpException("Process is not running");
         }
 
-        // Set stream to non-blocking mode
         \stream_set_blocking($this->pipes[1], false);
 
-        $response = "";
+        $buffer = "";
         $startTime = \time();
-        $timeout = 30; // 30-second timeout
+        $timeout = 30;
 
-        // Keep reading until we get a complete JSON response or timeout
         while (\time() - $startTime < $timeout) {
             $status = \proc_get_status($this->process);
 
             if (!$status['running']) {
-                throw new McpException("MCP server process has terminated unexpectedly");
+                $error = \stream_get_contents($this->pipes[2]);
+                throw new McpException("MCP server process has terminated unexpectedly: " . $error);
             }
 
             $chunk = \fread($this->pipes[1], 4096);
-            if ($chunk !== false && strlen($chunk) > 0) {
-                $response .= $chunk;
+            if ($chunk !== false && \strlen($chunk) > 0) {
+                $buffer .= $chunk;
 
-                // Try to parse what we have so far
-                $decoded = \json_decode($response, true);
-                if ($decoded !== null) {
-                    // We've got a valid JSON response
-                    yield $decoded;
+                // Попытка извлечь полные JSON сообщения
+                while (($pos = \strpos($buffer, "\n")) !== false) {
+                    $line = \substr($buffer, 0, $pos);
+                    $buffer = \substr($buffer, $pos + 1);
+
+                    $decoded = \json_decode($line, true);
+                    if ($decoded !== null) {
+                        yield $decoded;
+                    }
                 }
             }
 
-            // Small delay to prevent CPU spinning
-            \usleep(10000); // 10ms
+            \usleep(10000);
         }
 
         throw new McpException("Timeout waiting for response from MCP server");
