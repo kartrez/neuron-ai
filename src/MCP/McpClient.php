@@ -41,7 +41,7 @@ class McpClient
             ],
         ];
         $this->transport->send(\json_encode($request, JSON_UNESCAPED_UNICODE));
-        $this->transport->receive();
+        iterator_to_array($this->transport->receive());
         $request = [
             "jsonrpc" => "2.0",
             "method"  => "notifications/initialized",
@@ -71,7 +71,7 @@ class McpClient
             }
 
             $this->transport->send(\json_encode($request, JSON_UNESCAPED_UNICODE));
-            $response = $this->transport->receive();
+            $response = iterator_to_array($this->transport->receive());
 
             $tools = \array_merge($tools, $response['result']['tools']);
         } while (isset($response['result']['nextCursor']));
