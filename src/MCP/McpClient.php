@@ -11,10 +11,10 @@ class McpClient
     /**
      * Create a new MCP client with the given transport
      */
-    public function __construct(array $config)
+    public function __construct(array $config, ?McpTransportInterface $transport = null)
     {
         if (\array_key_exists('command', $config)) {
-            $this->transport = new StdioTransport($config);
+            $this->transport = $transport ?? new StdioTransport($config);
             $this->transport->connect();
             $this->initialize();
         } else {

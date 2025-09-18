@@ -14,9 +14,9 @@ class McpConnector
 
     protected McpClient $client;
 
-    public function __construct(array $config)
+    public function __construct(array $config, McpTransportInterface $transport = null)
     {
-        $this->client = new McpClient($config);
+        $this->client = new McpClient($config, $transport);
     }
 
     /**
