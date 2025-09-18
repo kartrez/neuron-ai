@@ -15,12 +15,15 @@ class McpClient
     {
         if (\array_key_exists('command', $config)) {
             $this->transport = $transport ?? new StdioTransport($config);
-            $this->transport->connect();
-            $this->initialize();
+        } else if (\array_key_exists('host', $config) || \array_key_exists('port', $config)) {
+            $this->transport = $transport ?? new SocketTransport($config);
         } else {
             // todo: implement support for SSE with URL config property
             throw new McpException('Transport not supported!');
         }
+        
+        $this->transport->connect();
+        $this->initialize();
     }
 
     protected function initialize()
@@ -73,7 +76,7 @@ class McpClient
             $this->transport->send($request);
             $response = $this->transport->receive();
 
-            $tools = \array_merge($tools, $response['result']['tools']);
+            $tools = \array_merge($tools, $response['result']['tools'] ?? []);
         } while (isset($response['result']['nextCursor']));
 
         return $tools;
