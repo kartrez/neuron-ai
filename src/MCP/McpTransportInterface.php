@@ -4,8 +4,9 @@ namespace NeuronAI\MCP;
 
 interface McpTransportInterface
 {
-    public function connect(): void;
-    public function send($data): void;
-    public function receive(): array;
-    public function disconnect(): void;
+    public function initialize(): void;
+    public function isConnected(): bool;
+    public function send(string $data): void;
+    public function receive(): \Generator;
+    public function close(): void;
 }
