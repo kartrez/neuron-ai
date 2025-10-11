@@ -42,7 +42,8 @@ class DelimiterTextSplitter implements SplitterInterface
             $split[] = new Document(
                 content: $chunk,
                 sourceType: $document->getSourceType(),
-                sourceName: $document->getSourceName()
+                sourceName: $document->getSourceName(),
+                metadata: $document->getMetadata()
             );;
         }
 

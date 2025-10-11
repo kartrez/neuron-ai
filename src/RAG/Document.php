@@ -12,13 +12,12 @@ final class Document implements DocumentInterface
 
     private float $score = 0;
 
-    private array $metadata = [];
-
     public function __construct(
         string|int $id = '',
         private readonly string $content = '',
         private readonly string $sourceType = 'manual',
         private readonly string $sourceName = 'manual',
+        private array $metadata = [],
     ) {
         $this->id = $id ?: Uuid::uuid4()->toString();
     }

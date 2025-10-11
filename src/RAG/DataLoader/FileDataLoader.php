@@ -103,12 +103,13 @@ class FileDataLoader extends AbstractDataLoader
     }
 
 
-    protected function getDocument(string $content, string $entry): DocumentInterface
+    protected function getDocument(string $content, string $entry, array $metadata = []): DocumentInterface
     {
         $document = new Document(
             content: $content,
             sourceType: 'files',
-            sourceName: $entry
+            sourceName: $entry,
+            metadata: $metadata
         );
 
         return $document;
