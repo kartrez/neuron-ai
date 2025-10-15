@@ -38,7 +38,7 @@ class Message implements \JsonSerializable
     {
         $result = [];
         foreach ($messages as $message) {
-            $result[] = self::buildMessage($message);
+            $result[] = $message instanceof self ? $message : self::buildMessage($message);
         }
 
         return $result;
