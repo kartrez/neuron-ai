@@ -114,6 +114,26 @@ final class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
+    /**
+     * Bulk save documents.
+     *
+     * @param list<array{id: string, payload: array{content: string, ...}, vector: list<numeric>}> $points
+     * @return void
+     * @throws GuzzleException
+     */
+    public function addPoints(array $points, string $collection = 'default'): void
+    {
+        $this->createCollection($collection);
+
+        $this->client->put("collections/{$collection}/points", [
+            RequestOptions::JSON => [
+                'points' => [
+                    ...$points
+                ],
+            ]
+        ]);
+    }
+
     public function similaritySearch(array $embedding, string $collection = 'default'): iterable
     {
         $this->createCollection($collection);
