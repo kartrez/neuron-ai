@@ -65,16 +65,16 @@ final class QdrantVectorStore implements VectorStoreInterface
     /**
      * @throws GuzzleException
      */
-    public function deleteDocument(string $collection, string $sourceName): void
+    public function deleteByFilter(string $collection, string $key, string $value): void
     {
         $this->client->post("collections/{$collection}/points/delete", [
             RequestOptions::JSON => [
                 'filter' => [
                     'must' => [
                         [
-                            "key" => "sourceName",
+                            "key" => $key,
                             "match" => [
-                                "value" => $sourceName
+                                "value" => $value
                             ]
                         ]
                     ]
