@@ -78,8 +78,8 @@ class RAG extends Agent
             Primary rule: Use data strictly from EXTRA-CONTEXT when available.
             Secondary rule: If EXTRA-CONTEXT lacks sufficient information, provide the most relevant and accurate answer based on your knowledge.
             Always indicate the source of information:
-            - For EXTRA-CONTEXT data: prefix with "[From Context]: "
-            - For generated responses: prefix with "[Relevant Answer]: "
+            - For EXTRA-CONTEXT data: prefix with "[📚]: "
+            - For generated responses: prefix with "[🤖]: "
             When EXTRA-CONTEXT is empty or irrelevant, clearly state: 'No relevant data found in context. Providing best available answer:'
         TEXT;
     }
