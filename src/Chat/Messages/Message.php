@@ -17,7 +17,9 @@ class Message implements \JsonSerializable
 
     public function __construct(
         protected MessageRole $role,
-        protected array|string|int|float|null $content = null
+        protected array|string|int|float|null $content = null,
+        protected array $toolCalls = [],
+        protected string $toolCallId = ''
     ) {
     }
 
@@ -27,7 +29,12 @@ class Message implements \JsonSerializable
      */
     public static function buildMessage(array $message): self
     {
-        return new self(MessageRole::from($message['role']) ?? MessageRole::USER, $message['content']);
+        return new self(
+            role: MessageRole::from($message['role']) ?? MessageRole::USER,
+            content: $message['content'],
+            toolCalls: $message['tool_calls'],
+            toolCallId: $message['tool_call_id']
+        );
     }
 
     /**
@@ -47,6 +54,26 @@ class Message implements \JsonSerializable
     public function getRole(): string
     {
         return $this->role->value;
+    }
+
+    public function getToolCalls(): array
+    {
+        return $this->toolCalls;
+    }
+
+    public function getTollCallId(): string
+    {
+        return $this->toolCallId;
+    }
+
+    public function setToolCalls(array $toolCalls): void
+    {
+        $this->toolCalls = $toolCalls;
+    }
+
+    public function setToolCallId(string $toolCallId): void
+    {
+        $this->toolCallId = $toolCallId;
     }
 
     public function setRole(MessageRole|string $role): Message
