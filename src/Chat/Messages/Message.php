@@ -135,6 +135,14 @@ class Message implements \JsonSerializable
             'content' => $this->getContent()
         ];
 
+        if ($this->getToolCalls()) {
+            $data['tool_calls'] = $this->getToolCalls();
+        }
+
+        if ($this->getToolCallId()) {
+            $data['tool_call_id'] = $this->getToolCallId();
+        }
+
         if ($this->getUsage()) {
             $data['usage'] = $this->getUsage()->jsonSerialize();
         }
