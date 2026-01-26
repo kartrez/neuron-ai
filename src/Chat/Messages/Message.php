@@ -61,7 +61,7 @@ class Message implements \JsonSerializable
         return $this->toolCalls;
     }
 
-    public function getTollCallId(): string
+    public function getToolCallId(): string
     {
         return $this->toolCallId;
     }
